@@ -16,6 +16,7 @@ use HiEvents\Repository\Interfaces\ProductRepositoryInterface;
 use HiEvents\Services\Application\Handlers\Attendee\DTO\CreateAttendeeDTO;
 use HiEvents\Services\Application\Handlers\Attendee\DTO\ImportAttendeesDTO;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use Maatwebsite\Excel\Facades\Excel;
 use RuntimeException;
@@ -75,10 +76,12 @@ class ImportAttendeesHandler
                 // Check if attendee with this email already exists for this event and product
                 if ($this->attendeeExists($attendeeData->email, $dto->event_id, $attendeeData->product_id)) {
                     $skipped++;
-                    $errors[] = [
+                    Log::info('Duplicate attendee skipped during CSV import', [
                         'row' => $rowNumber,
-                        'message' => __('An attendee with this email already exists for this ticket'),
-                    ];
+                        'email' => $attendeeData->email,
+                        'event_id' => $dto->event_id,
+                        'product_id' => $attendeeData->product_id,
+                    ]);
 
                     continue;
                 }
@@ -182,7 +185,9 @@ class ImportAttendeesHandler
 
         /** @var ProductDomainObject $product */
         foreach ($this->eventProducts as $product) {
-            if (strtolower(trim($product->getTitle())) === $normalizedName) {
+            // Sanitize product title the same way as ticket name for comparison
+            $sanitizedTitle = $this->sanitizeGenericField($product->getTitle());
+            if (strtolower(trim($sanitizedTitle)) === $normalizedName) {
                 return $product;
             }
         }
@@ -228,6 +233,14 @@ class ImportAttendeesHandler
         $language = $this->getRowValue($row, ['language', 'locale', 'lang']) ?? 'English';
         $ticketName = $this->getRowValue($row, ['ticket', 'ticket_name', 'product', 'product_name']);
         $paid = $this->getRowValue($row, ['paid', 'amount_paid', 'amount', 'price']);
+
+        // Sanitize inputs to prevent malicious data and ensure data integrity
+        $firstName = $this->sanitizeName($firstName);
+        $lastName = $this->sanitizeName($lastName);
+        $email = $this->sanitizeEmail($email);
+        $language = $this->sanitizeGenericField($language);
+        $ticketName = $this->sanitizeGenericField($ticketName);
+        $paid = $this->sanitizeGenericField($paid);
 
         // Skip empty rows
         if (empty($firstName) && empty($lastName) && empty($email)) {
@@ -294,6 +307,64 @@ class ImportAttendeesHandler
             'locale' => $locale,
             'taxes_and_fees' => [],
         ]);
+    }
+
+    /**
+     * Sanitize name fields (first name, last name).
+     * Replaces dashes, dots, and underscores with spaces.
+     * Removes any special characters, keeping only letters, numbers, and spaces.
+     */
+    private function sanitizeName(?string $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return $value;
+        }
+
+        // Replace dashes, dots, and underscores with spaces
+        $value = str_replace(['-', '.', '_'], ' ', $value);
+
+        // Remove any character that is not a letter, number, or space
+        $value = preg_replace('/[^a-zA-Z0-9\s]/u', '', $value);
+
+        // Normalize multiple spaces to single space and trim
+        $value = preg_replace('/\s+/', ' ', $value);
+
+        return trim($value);
+    }
+
+    /**
+     * Sanitize email field.
+     * Normalizes to lowercase and removes any character that is not a letter, number, dot, or @ sign.
+     */
+    private function sanitizeEmail(?string $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return $value;
+        }
+
+        // Normalize email to lowercase for case-insensitive duplicate detection
+        $value = strtolower($value);
+
+        // Remove any character that is not a letter, number, dot, or @ sign
+        $value = preg_replace('/[^a-z0-9.@]/', '', $value);
+
+        return trim($value);
+    }
+
+    /**
+     * Sanitize generic fields (language, ticket name, paid amount).
+     * Removes any character that is not a letter, number, dot, or underscore.
+     */
+    private function sanitizeGenericField(?string $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return $value;
+        }
+
+        // Remove any character that is not a letter, number, dot, or underscore
+        $value = preg_replace('/[^a-zA-Z0-9._]/', '', $value);
+
+        return trim($value);
     }
 
     private function getRowValue(Collection $row, array $possibleKeys): ?string
