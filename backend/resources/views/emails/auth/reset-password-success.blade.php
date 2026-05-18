@@ -5,7 +5,7 @@
 
 {{ __('If you did not request a password reset, please immediately reset your password.') }}
 
-{{ __('Thank you') }},<\br>
+{{ __('Thank you') }},<br>
 KMTeam LLC Events
 </x-mail::message>
 
