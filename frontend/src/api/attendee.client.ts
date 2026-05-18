@@ -77,6 +77,22 @@ export const attendeesClient = {
 
         return new Blob([response.data]);
     },
+    import: async (eventId: IdParam, data: ImportAttendeesRequest): Promise<ImportAttendeesResponse> => {
+        const formData = new FormData();
+        formData.append('file', data.file);
+        formData.append('send_confirmation_email', data.send_confirmation_email ? '1' : '0');
+        
+        const response = await api.post<ImportAttendeesResponse>(
+            `events/${eventId}/attendees/import`,
+            formData,
+            {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            }
+        );
+        return response.data;
+    },
     resendTicket: async (eventId: IdParam, attendeeId: IdParam) => {
         return await api.post(`events/${eventId}/attendees/${attendeeId}/resend-ticket`);
     },
