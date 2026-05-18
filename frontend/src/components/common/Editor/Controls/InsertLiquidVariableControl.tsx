@@ -53,6 +53,7 @@ const TEMPLATE_VARIABLES: Record<EmailTemplateType, TemplateVariable[]> = {
         // Attendee Information
         {label: t`Attendee Name`, value: 'attendee.name', description: t`Ticket holder's name`, category: t`Attendee`},
         {label: t`Attendee Email`, value: 'attendee.email', description: t`Ticket holder's email`, category: t`Attendee`},
+        {label: t`Attendee Ticket QR`, value: 'attendee.ticket_qr', description: t`QR code image for the ticket`, category: t`Attendee`},
 
         // Ticket Information
         {label: t`Ticket Name`, value: 'ticket.name', description: t`Type of ticket`, category: t`Ticket`},
