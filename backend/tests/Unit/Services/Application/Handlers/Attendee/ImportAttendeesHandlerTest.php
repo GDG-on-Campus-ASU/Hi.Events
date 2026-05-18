@@ -464,4 +464,249 @@ class ImportAttendeesHandlerTest extends TestCase
         $this->assertEquals('testscript@example.com', $capturedDTO->email);
         $this->assertEquals(1, $result['successful']);
     }
+
+    public function test_allows_arabic_characters_in_name_fields(): void
+    {
+        $eventId = 1;
+        $productId = 10;
+        $productPriceId = 100;
+        $email = 'arabic@example.com';
+
+        // Arabic names
+        $arabicFirstName = 'محمد';
+        $arabicLastName = 'أحمد';
+
+        // Create a mock CSV with Arabic names
+        $csvRows = collect([
+            collect([
+                'firstname' => $arabicFirstName,
+                'lastname' => $arabicLastName,
+                'email' => $email,
+                'language' => 'English',
+                'ticket' => 'VIP Ticket',
+                'paid' => '50.00',
+            ]),
+        ]);
+
+        // Mock the Excel import
+        Excel::shouldReceive('import')
+            ->once()
+            ->andReturnUsing(function ($import, $file) use ($csvRows) {
+                $reflection = new \ReflectionClass($import);
+                $property = $reflection->getProperty('rows');
+                $property->setAccessible(true);
+                $property->setValue($import, $csvRows);
+            });
+
+        // Mock product repository to return a product
+        $productPrice = Mockery::mock(ProductPriceDomainObject::class);
+        $productPrice->shouldReceive('getId')->andReturn($productPriceId);
+
+        $product = Mockery::mock(ProductDomainObject::class);
+        $product->shouldReceive('getId')->andReturn($productId);
+        $product->shouldReceive('getTitle')->andReturn('VIP Ticket');
+        $product->shouldReceive('getProductPrices')->andReturn(collect([$productPrice]));
+
+        $this->productRepository
+            ->shouldReceive('loadRelation')
+            ->once()
+            ->andReturnSelf();
+
+        $this->productRepository
+            ->shouldReceive('findWhere')
+            ->once()
+            ->andReturn(collect([$product]));
+
+        // Mock attendee repository to return null (no existing attendee)
+        $this->attendeeRepository
+            ->shouldReceive('findFirstWhere')
+            ->once()
+            ->andReturn(null);
+
+        // Create the DTO
+        $dto = ImportAttendeesDTO::fromArray([
+            'event_id' => $eventId,
+            'send_confirmation_email' => false,
+            'file' => UploadedFile::fake()->create('test.csv', 100),
+        ]);
+
+        // Capture the createAttendeeHandler call to verify Arabic names are preserved
+        $capturedDTO = null;
+        $this->createAttendeeHandler
+            ->shouldReceive('handle')
+            ->once()
+            ->andReturnUsing(function ($dto) use (&$capturedDTO) {
+                $capturedDTO = $dto;
+
+                return Mockery::mock(AttendeeDomainObject::class);
+            });
+
+        $result = $this->handler->handle($dto);
+
+        // Assert that Arabic names are preserved
+        $this->assertEquals($arabicFirstName, $capturedDTO->first_name);
+        $this->assertEquals($arabicLastName, $capturedDTO->last_name);
+        $this->assertEquals(1, $result['successful']);
+    }
+
+    public function test_allows_unicode_characters_in_ticket_name(): void
+    {
+        $eventId = 1;
+        $productId = 10;
+        $productPriceId = 100;
+        $email = 'test@example.com';
+
+        // Arabic ticket name
+        $arabicTicketName = 'تذكرة VIP';
+
+        // Create a mock CSV with Arabic ticket name
+        $csvRows = collect([
+            collect([
+                'firstname' => 'John',
+                'lastname' => 'Doe',
+                'email' => $email,
+                'language' => 'English',
+                'ticket' => $arabicTicketName,
+                'paid' => '50.00',
+            ]),
+        ]);
+
+        // Mock the Excel import
+        Excel::shouldReceive('import')
+            ->once()
+            ->andReturnUsing(function ($import, $file) use ($csvRows) {
+                $reflection = new \ReflectionClass($import);
+                $property = $reflection->getProperty('rows');
+                $property->setAccessible(true);
+                $property->setValue($import, $csvRows);
+            });
+
+        // Mock product repository to return a product with Arabic name
+        $productPrice = Mockery::mock(ProductPriceDomainObject::class);
+        $productPrice->shouldReceive('getId')->andReturn($productPriceId);
+
+        $product = Mockery::mock(ProductDomainObject::class);
+        $product->shouldReceive('getId')->andReturn($productId);
+        $product->shouldReceive('getTitle')->andReturn($arabicTicketName);
+        $product->shouldReceive('getProductPrices')->andReturn(collect([$productPrice]));
+
+        $this->productRepository
+            ->shouldReceive('loadRelation')
+            ->once()
+            ->andReturnSelf();
+
+        $this->productRepository
+            ->shouldReceive('findWhere')
+            ->once()
+            ->andReturn(collect([$product]));
+
+        // Mock attendee repository to return null (no existing attendee)
+        $this->attendeeRepository
+            ->shouldReceive('findFirstWhere')
+            ->once()
+            ->andReturn(null);
+
+        // Create the DTO
+        $dto = ImportAttendeesDTO::fromArray([
+            'event_id' => $eventId,
+            'send_confirmation_email' => false,
+            'file' => UploadedFile::fake()->create('test.csv', 100),
+        ]);
+
+        // The createAttendeeHandler should be called successfully with Arabic ticket
+        $this->createAttendeeHandler
+            ->shouldReceive('handle')
+            ->once()
+            ->andReturn(Mockery::mock(AttendeeDomainObject::class));
+
+        $result = $this->handler->handle($dto);
+
+        // Assert that the attendee was created successfully
+        $this->assertEquals(1, $result['successful']);
+        $this->assertEquals(0, $result['failed']);
+    }
+
+    public function test_allows_various_unicode_characters_in_names(): void
+    {
+        $eventId = 1;
+        $productId = 10;
+        $productPriceId = 100;
+        $email = 'unicode@example.com';
+
+        // Various Unicode names (Chinese, Japanese, Korean, Cyrillic, etc.)
+        $chineseFirstName = '李明';
+        $japaneseName = 'たかし';
+
+        // Create a mock CSV with various Unicode names
+        $csvRows = collect([
+            collect([
+                'firstname' => $chineseFirstName,
+                'lastname' => $japaneseName,
+                'email' => $email,
+                'language' => 'English',
+                'ticket' => 'VIP Ticket',
+                'paid' => '50.00',
+            ]),
+        ]);
+
+        // Mock the Excel import
+        Excel::shouldReceive('import')
+            ->once()
+            ->andReturnUsing(function ($import, $file) use ($csvRows) {
+                $reflection = new \ReflectionClass($import);
+                $property = $reflection->getProperty('rows');
+                $property->setAccessible(true);
+                $property->setValue($import, $csvRows);
+            });
+
+        // Mock product repository to return a product
+        $productPrice = Mockery::mock(ProductPriceDomainObject::class);
+        $productPrice->shouldReceive('getId')->andReturn($productPriceId);
+
+        $product = Mockery::mock(ProductDomainObject::class);
+        $product->shouldReceive('getId')->andReturn($productId);
+        $product->shouldReceive('getTitle')->andReturn('VIP Ticket');
+        $product->shouldReceive('getProductPrices')->andReturn(collect([$productPrice]));
+
+        $this->productRepository
+            ->shouldReceive('loadRelation')
+            ->once()
+            ->andReturnSelf();
+
+        $this->productRepository
+            ->shouldReceive('findWhere')
+            ->once()
+            ->andReturn(collect([$product]));
+
+        // Mock attendee repository to return null (no existing attendee)
+        $this->attendeeRepository
+            ->shouldReceive('findFirstWhere')
+            ->once()
+            ->andReturn(null);
+
+        // Create the DTO
+        $dto = ImportAttendeesDTO::fromArray([
+            'event_id' => $eventId,
+            'send_confirmation_email' => false,
+            'file' => UploadedFile::fake()->create('test.csv', 100),
+        ]);
+
+        // Capture the createAttendeeHandler call to verify Unicode names are preserved
+        $capturedDTO = null;
+        $this->createAttendeeHandler
+            ->shouldReceive('handle')
+            ->once()
+            ->andReturnUsing(function ($dto) use (&$capturedDTO) {
+                $capturedDTO = $dto;
+
+                return Mockery::mock(AttendeeDomainObject::class);
+            });
+
+        $result = $this->handler->handle($dto);
+
+        // Assert that Unicode names are preserved
+        $this->assertEquals($chineseFirstName, $capturedDTO->first_name);
+        $this->assertEquals($japaneseName, $capturedDTO->last_name);
+        $this->assertEquals(1, $result['successful']);
+    }
 }
