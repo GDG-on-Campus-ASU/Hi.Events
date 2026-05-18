@@ -21,6 +21,20 @@ export interface CreateAttendeeRequest extends EditAttendeeRequest {
     locale: SupportedLocales,
 }
 
+export interface ImportAttendeesRequest {
+    file: File;
+    send_confirmation_email: boolean;
+}
+
+export interface ImportAttendeesResponse {
+    successful: number;
+    failed: number;
+    errors: Array<{
+        row: number;
+        message: string;
+    }>;
+}
+
 export const attendeesClient = {
     create: async (eventId: IdParam, attendee: CreateAttendeeRequest) => {
         const response = await api.post<GenericDataResponse<Attendee>>(
