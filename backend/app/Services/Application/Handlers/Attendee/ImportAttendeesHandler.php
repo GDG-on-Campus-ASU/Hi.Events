@@ -312,7 +312,7 @@ class ImportAttendeesHandler
     /**
      * Sanitize name fields (first name, last name).
      * Replaces dashes, dots, and underscores with spaces.
-     * Removes any special characters, keeping only letters, numbers, and spaces.
+     * Removes any special characters, keeping only Unicode letters, numbers, and spaces.
      */
     private function sanitizeName(?string $value): ?string
     {
@@ -323,8 +323,8 @@ class ImportAttendeesHandler
         // Replace dashes, dots, and underscores with spaces
         $value = str_replace(['-', '.', '_'], ' ', $value);
 
-        // Remove any character that is not a letter, number, or space
-        $value = preg_replace('/[^a-zA-Z0-9\s]/u', '', $value);
+        // Remove any character that is not a Unicode letter, number, or space
+        $value = preg_replace('/[^\p{L}0-9\s]/u', '', $value);
 
         // Normalize multiple spaces to single space and trim
         $value = preg_replace('/\s+/', ' ', $value);
@@ -334,7 +334,7 @@ class ImportAttendeesHandler
 
     /**
      * Sanitize email field.
-     * Normalizes to lowercase and removes any character that is not a letter, number, dot, or @ sign.
+     * Normalizes to lowercase and removes any character that is not valid in an email address.
      */
     private function sanitizeEmail(?string $value): ?string
     {
@@ -345,15 +345,15 @@ class ImportAttendeesHandler
         // Normalize email to lowercase for case-insensitive duplicate detection
         $value = strtolower($value);
 
-        // Remove any character that is not a letter, number, dot, or @ sign
-        $value = preg_replace('/[^a-z0-9.@]/', '', $value);
+        // Remove any character that is not valid in an email address (letters, numbers, and common email symbols)
+        $value = preg_replace('/[^a-z0-9.@_+\-]/', '', $value);
 
         return trim($value);
     }
 
     /**
      * Sanitize generic fields (language, ticket name, paid amount).
-     * Removes any character that is not a letter, number, dot, or underscore.
+     * Removes any character that is not a Unicode letter, number, space, dot, dash, or underscore.
      */
     private function sanitizeGenericField(?string $value): ?string
     {
@@ -361,8 +361,8 @@ class ImportAttendeesHandler
             return $value;
         }
 
-        // Remove any character that is not a letter, number, dot, or underscore
-        $value = preg_replace('/[^a-zA-Z0-9._]/', '', $value);
+        // Remove any character that is not a Unicode letter, number, space, dot, dash, or underscore
+        $value = preg_replace('/[^\p{L}0-9\s.\-_]/u', '', $value);
 
         return trim($value);
     }
