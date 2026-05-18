@@ -14,10 +14,8 @@ class ImportAttendeesAction extends BaseAction
 {
     public function __construct(
         private readonly ImportAttendeesHandler $importAttendeesHandler,
-    )
-    {
-    }
-
+    ) {}
+    
     public function __invoke(ImportAttendeesRequest $request, int $eventId): JsonResponse
     {
         $this->isActionAuthorized($eventId, EventDomainObject::class);
@@ -25,7 +23,7 @@ class ImportAttendeesAction extends BaseAction
         $result = $this->importAttendeesHandler->handle(
             ImportAttendeesDTO::fromArray([
                 'event_id' => $eventId,
-                'send_confirmation_email' => (bool)$request->input('send_confirmation_email'),
+                'send_confirmation_email' => (bool) $request->input('send_confirmation_email'),
                 'file' => $request->file('file'),
             ])
         );
@@ -34,6 +32,7 @@ class ImportAttendeesAction extends BaseAction
             data: [
                 'successful' => $result['successful'],
                 'failed' => $result['failed'],
+                'skipped' => $result['skipped'],
                 'errors' => $result['errors'],
             ],
             statusCode: ResponseCodes::HTTP_OK,
