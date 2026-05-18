@@ -34,6 +34,7 @@
 {{ __('Review Message') }}
 </x-mail::button>
 
-{{ __('Thank you') }}
+{{ __('Thank you') }}, <\br>
+KMTeam LLC Events
 
 </x-mail::message>
