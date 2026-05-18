@@ -16,9 +16,15 @@ use HiEvents\Helper\DateHelper;
 use HiEvents\Helper\IdHelper;
 use HiEvents\Helper\Url;
 use HiEvents\Locale;
+use HiEvents\Services\Infrastructure\QrCode\QrCodeService;
 
 class EmailTokenContextBuilder
 {
+    public function __construct(
+        private readonly QrCodeService $qrCodeService,
+    ) {
+    }
+
     public function buildOrderConfirmationContext(
         OrderDomainObject        $order,
         EventDomainObject        $event,
@@ -97,6 +103,11 @@ class EmailTokenContextBuilder
         $baseContext['attendee'] = [
             'name' => $attendee->getFirstName() . ' ' . $attendee->getLastName(),
             'email' => $attendee->getEmail() ?? '',
+            'ticket_qr' => $this->qrCodeService->generateImgTag(
+                $attendee->getPublicId(),
+                200,
+                __('Ticket QR Code')
+            ),
         ];
 
         $baseContext['ticket'] = [
@@ -162,6 +173,11 @@ class EmailTokenContextBuilder
             $baseContext['attendee'] = [
                 'name' => 'John Smith',
                 'email' => 'john@example.com',
+                'ticket_qr' => $this->qrCodeService->generateImgTag(
+                    'PREVIEW-QR-CODE',
+                    200,
+                    __('Ticket QR Code')
+                ),
             ];
             $baseContext['ticket'] = [
                 'name' => 'VIP Pass',

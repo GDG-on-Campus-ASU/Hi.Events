@@ -10,6 +10,7 @@ use HiEvents\DomainObjects\OrderItemDomainObject;
 use HiEvents\DomainObjects\OrganizerDomainObject;
 use HiEvents\DomainObjects\Enums\PaymentProviders;
 use HiEvents\Services\Domain\Email\EmailTokenContextBuilder;
+use HiEvents\Services\Infrastructure\QrCode\QrCodeService;
 use Illuminate\Support\Collection;
 use Mockery;
 use Tests\TestCase;
@@ -17,11 +18,15 @@ use Tests\TestCase;
 class EmailTokenContextBuilderTest extends TestCase
 {
     private EmailTokenContextBuilder $contextBuilder;
+    private QrCodeService $qrCodeService;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->contextBuilder = new EmailTokenContextBuilder();
+        $this->qrCodeService = Mockery::mock(QrCodeService::class);
+        $this->qrCodeService->shouldReceive('generateImgTag')
+            ->andReturn('<img src="data:image/png;base64,mockqr" alt="Ticket QR Code" width="200" height="200" />');
+        $this->contextBuilder = new EmailTokenContextBuilder($this->qrCodeService);
     }
 
     public function test_builds_order_confirmation_context(): void
@@ -89,6 +94,8 @@ class EmailTokenContextBuilderTest extends TestCase
         // Test attendee context
         $this->assertEquals('Jane Smith', $context['attendee']['name']);
         $this->assertEquals('jane@example.com', $context['attendee']['email']);
+        $this->assertArrayHasKey('ticket_qr', $context['attendee']);
+        $this->assertStringContainsString('<img', $context['attendee']['ticket_qr']);
 
         // Test ticket context
         $this->assertEquals('General Admission', $context['ticket']['name']);
@@ -220,6 +227,7 @@ class EmailTokenContextBuilderTest extends TestCase
             'getEmail' => 'jane@example.com',
             'getProductPriceId' => 123,
             'getShortId' => 'ATT123',
+            'getPublicId' => 'PUB-ATT-123456',
         ]);
     }
 }

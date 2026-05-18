@@ -198,6 +198,11 @@ class LiquidTemplateRenderer
                 'example' => 'john@example.com',
             ],
             [
+                'token' => '{{ attendee.ticket_qr }}',
+                'description' => __('The attendee\'s ticket QR code as an image'),
+                'example' => '<img src="data:image/png;base64,..." alt="Ticket QR Code" width="200" height="200" />',
+            ],
+            [
                 'token' => '{{ ticket.name }}',
                 'description' => __('The ticket type name'),
                 'example' => 'VIP Pass',
