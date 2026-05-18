@@ -6,7 +6,7 @@
                 <img src="{{ $appLogo }}" class="logo" alt="{{ config('app.name') }}"
                      style="max-width: 300px;">
             @else
-                <img src="{{ config('app.frontend_url') }}/logos/hi-events-stacked-light.png" class="logo" alt="{{ config('app.name') }}"
+                <img src="https://cdn.kmteam.tech/Images/KMTeam-n.png" class="logo" alt="{{ config('app.name') }}"
                      style="max-width: 300px;">
             @endif
         </x-mail::header>
