@@ -33,13 +33,9 @@ export const PoweredByFooter = (
                 title={"Powered by KMTeam LLC"}
                 style={{display: "inline-flex", alignItems: "center", gap: "4px"}}
             >
-                <img
-                    src={"https://cdn.kmteam.tech/Images/KMTeam-n.png"}
-                    alt={"KMTeam LLC logo"}
-                    style={{height: "20px", verticalAlign: "middle"}}
-                />
                 KMTeam LLC
             </a>
+            🚀
         </>
     );
 
