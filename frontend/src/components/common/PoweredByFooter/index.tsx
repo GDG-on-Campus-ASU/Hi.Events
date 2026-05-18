@@ -35,7 +35,7 @@ export const PoweredByFooter = (
             >
                 <img
                     src={"https://cdn.kmteam.tech/Images/KMTeam-n.png"}
-                    alt={"KMTeam LLC"}
+                    alt={"KMTeam LLC logo"}
                     style={{height: "20px", verticalAlign: "middle"}}
                 />
                 KMTeam LLC
