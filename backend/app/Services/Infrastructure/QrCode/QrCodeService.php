@@ -7,11 +7,11 @@ use chillerlan\QRCode\QROptions;
 
 class QrCodeService
 {
-    public function generateBase64Image(string $data, int $size = 200): string
+    public function generateBase64Image(string $data, int $scale = 10): string
     {
         $options = new QROptions([
             'outputType' => QRCode::OUTPUT_IMAGE_PNG,
-            'scale' => 10,
+            'scale' => $scale,
             'imageBase64' => true,
         ]);
 
@@ -20,7 +20,7 @@ class QrCodeService
 
     public function generateImgTag(string $data, int $size = 200, string $alt = 'QR Code'): string
     {
-        $base64 = $this->generateBase64Image($data, $size);
+        $base64 = $this->generateBase64Image($data);
 
         return sprintf(
             '<img src="%s" alt="%s" width="%d" height="%d" style="display:block;" />',
