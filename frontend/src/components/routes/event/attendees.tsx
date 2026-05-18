@@ -6,13 +6,14 @@ import {AttendeeTable} from "../../common/AttendeeTable";
 import {SearchBarWrapper} from "../../common/SearchBar";
 import {Pagination} from "../../common/Pagination";
 import {Button} from "@mantine/core";
-import {IconDownload, IconPlus} from "@tabler/icons-react";
+import {IconDownload, IconPlus, IconUpload} from "@tabler/icons-react";
 import {ToolBar} from "../../common/ToolBar";
 import {TableSkeleton} from "../../common/TableSkeleton";
 import {useFilterQueryParamSync} from "../../../hooks/useFilterQueryParamSync.ts";
 import {IdParam, ProductType, QueryFilterOperator, QueryFilters} from "../../../types.ts";
 import {useDisclosure} from "@mantine/hooks";
 import {CreateAttendeeModal} from "../../modals/CreateAttendeeModal";
+import {BulkUploadAttendeesModal} from "../../modals/BulkUploadAttendeesModal";
 import {downloadBinary} from "../../../utilites/download.ts";
 import {attendeesClient} from "../../../api/attendee.client.ts";
 import {useState} from "react";
@@ -35,6 +36,7 @@ const Attendees = () => {
     const attendees = attendeesQuery?.data?.data;
     const pagination = attendeesQuery?.data?.meta;
     const [createModalOpen, {open: openCreateModal, close: closeCreateModal}] = useDisclosure(false);
+    const [bulkUploadModalOpen, {open: openBulkUploadModal, close: closeBulkUploadModal}] = useDisclosure(false);
     const [downloadPending, setDownloadPending] = useState(false);
     const {data: event} = useGetEvent(eventId);
 
@@ -196,6 +198,10 @@ const Attendees = () => {
                         {t`Create`}
                     </Button>
 
+                    <Button color={'green'} size={'sm'} onClick={openBulkUploadModal} rightSection={<IconUpload/>}>
+                        {t`Upload CSV`}
+                    </Button>
+
                     <Button color={'green'}
                             size={'sm'}
                             loading={downloadPending}
@@ -218,6 +224,7 @@ const Attendees = () => {
                                    total={Number(pagination?.last_page)}/>}
             </PageBody>
             {createModalOpen && <CreateAttendeeModal onClose={closeCreateModal} isOpen={createModalOpen}/>}
+            {bulkUploadModalOpen && <BulkUploadAttendeesModal onClose={closeBulkUploadModal} isOpen={bulkUploadModalOpen}/>}
         </>
     );
 };
