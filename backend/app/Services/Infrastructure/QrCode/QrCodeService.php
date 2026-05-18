@@ -10,7 +10,7 @@ class QrCodeService
     public function generateBase64Image(string $data, int $scale = 10): string
     {
         $options = new QROptions([
-            'outputType' => QRCode::OUTPUT_IMAGE_PNG,
+            'outputType' => QRCode::OUTPUT_MARKUP_SVG,
             'scale' => $scale,
             'imageBase64' => true,
         ]);
