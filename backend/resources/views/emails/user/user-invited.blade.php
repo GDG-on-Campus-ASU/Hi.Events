@@ -11,6 +11,6 @@
 
 <a href="{{ $inviteLink }}">{{ __('Accept Invitation') }}</a>
 
-{{ __('Thank you') }},<br>
+{{ __('Thank you') }}, <br>
 KMTeam LLC Events
 </x-mail::message>
