@@ -47,7 +47,9 @@
 
   img {
     height: 55px;
+    max-width: 150px;
     width: auto;
+    object-fit: contain;
   }
 
   @media (max-width: 768px) {
@@ -55,6 +57,7 @@
 
     img {
       height: 36px;
+      max-width: 120px;
     }
   }
 }
