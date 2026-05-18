@@ -3,6 +3,7 @@
 namespace HiEvents\Services\Application\Handlers\Attendee;
 
 use HiEvents\DomainObjects\Enums\ProductType;
+use HiEvents\DomainObjects\Generated\AttendeeDomainObjectAbstract;
 use HiEvents\DomainObjects\Generated\ProductDomainObjectAbstract;
 use HiEvents\DomainObjects\ProductDomainObject;
 use HiEvents\DomainObjects\ProductPriceDomainObject;
@@ -10,6 +11,7 @@ use HiEvents\Exceptions\InvalidProductPriceId;
 use HiEvents\Exceptions\NoTicketsAvailableException;
 use HiEvents\Imports\AttendeesImport;
 use HiEvents\Locale;
+use HiEvents\Repository\Interfaces\AttendeeRepositoryInterface;
 use HiEvents\Repository\Interfaces\ProductRepositoryInterface;
 use HiEvents\Services\Application\Handlers\Attendee\DTO\CreateAttendeeDTO;
 use HiEvents\Services\Application\Handlers\Attendee\DTO\ImportAttendeesDTO;
@@ -24,18 +26,17 @@ class ImportAttendeesHandler
     private ?Collection $eventProducts = null;
 
     public function __construct(
-        private readonly CreateAttendeeHandler      $createAttendeeHandler,
+        private readonly CreateAttendeeHandler $createAttendeeHandler,
         private readonly ProductRepositoryInterface $productRepository,
-    )
-    {
-    }
+        private readonly AttendeeRepositoryInterface $attendeeRepository,
+    ) {}
 
     /**
-     * @return array{successful: int, failed: int, errors: array}
+     * @return array{successful: int, failed: int, skipped: int, errors: array}
      */
     public function handle(ImportAttendeesDTO $dto): array
     {
-        $import = new AttendeesImport();
+        $import = new AttendeesImport;
 
         try {
             Excel::import($import, $dto->file);
@@ -58,6 +59,7 @@ class ImportAttendeesHandler
 
         $successful = 0;
         $failed = 0;
+        $skipped = 0;
         $errors = [];
 
         foreach ($rows as $index => $row) {
@@ -67,6 +69,17 @@ class ImportAttendeesHandler
                 $attendeeData = $this->mapRowToAttendeeDTO($row, $dto);
 
                 if ($attendeeData === null) {
+                    continue;
+                }
+
+                // Check if attendee with this email already exists for this event and product
+                if ($this->attendeeExists($attendeeData->email, $dto->event_id, $attendeeData->product_id)) {
+                    $skipped++;
+                    $errors[] = [
+                        'row' => $rowNumber,
+                        'message' => __('An attendee with this email already exists for this ticket'),
+                    ];
+
                     continue;
                 }
 
@@ -102,8 +115,23 @@ class ImportAttendeesHandler
         return [
             'successful' => $successful,
             'failed' => $failed,
+            'skipped' => $skipped,
             'errors' => $errors,
         ];
+    }
+
+    /**
+     * Check if an attendee with the given email already exists for the specified event and product.
+     */
+    private function attendeeExists(string $email, int $eventId, int $productId): bool
+    {
+        $existingAttendee = $this->attendeeRepository->findFirstWhere([
+            AttendeeDomainObjectAbstract::EMAIL => strtolower($email),
+            AttendeeDomainObjectAbstract::EVENT_ID => $eventId,
+            AttendeeDomainObjectAbstract::PRODUCT_ID => $productId,
+        ]);
+
+        return $existingAttendee !== null;
     }
 
     private function validateRequiredColumns(Collection $row): void
@@ -126,12 +154,12 @@ class ImportAttendeesHandler
                     break;
                 }
             }
-            if (!$found) {
+            if (! $found) {
                 $missingColumns[] = $displayName;
             }
         }
 
-        if (!empty($missingColumns)) {
+        if (! empty($missingColumns)) {
             throw new RuntimeException(
                 __('CSV is missing required columns: :columns', ['columns' => implode(', ', $missingColumns)])
             );
@@ -219,7 +247,7 @@ class ImportAttendeesHandler
             throw new InvalidArgumentException(__('Email is required'));
         }
 
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        if (! filter_var($email, FILTER_VALIDATE_EMAIL)) {
             throw new InvalidArgumentException(__('Invalid email format'));
         }
 
@@ -233,7 +261,7 @@ class ImportAttendeesHandler
 
         // Find the product by name
         $product = $this->findProductByName($ticketName);
-        if (!$product) {
+        if (! $product) {
             throw new InvalidArgumentException(
                 __('Ticket ":ticket" not found in this event', ['ticket' => $ticketName])
             );
@@ -246,7 +274,7 @@ class ImportAttendeesHandler
         }
 
         // Parse paid amount
-        $amountPaid = (float)str_replace(',', '.', $paid);
+        $amountPaid = (float) str_replace(',', '.', $paid);
         if ($amountPaid < 0) {
             throw new InvalidArgumentException(__('Amount paid cannot be negative'));
         }
@@ -273,9 +301,10 @@ class ImportAttendeesHandler
         foreach ($possibleKeys as $key) {
             $value = $row->get($key);
             if ($value !== null && $value !== '') {
-                return trim((string)$value);
+                return trim((string) $value);
             }
         }
+
         return null;
     }
 }
