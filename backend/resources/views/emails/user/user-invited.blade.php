@@ -5,12 +5,12 @@
 <x-mail::message>
 {{ __('Hi :name', ['name' => $invitedUser->getFirstName()]) }},
 
-{{ __('You\'ve been invited to join :appName.', ['appName' => $appName]) }}
+{{ __('You\'ve been invited to join KMTeam LLC Events system.) }}
 
 {{ __('To accept the invitation, please click the link below:') }}
 
 <a href="{{ $inviteLink }}">{{ __('Accept Invitation') }}</a>
 
 {{ __('Thank you') }},<br>
-{{ $appName }}
+KMTeam LLC Events
 </x-mail::message>
