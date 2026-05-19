@@ -34,6 +34,9 @@ class EmailTemplateService
 
     public function renderTemplate(EmailTemplateDomainObject $template, array $context): RenderedEmailTemplateDTO
     {
+        $inlineAttachments = $context['_inline_attachments'] ?? [];
+        unset($context['_inline_attachments']);
+
         $renderedSubject = $this->liquidRenderer->render($template->getSubject(), $context);
         $renderedBody = $this->liquidRenderer->render($template->getBody(), $context);
 
@@ -57,6 +60,7 @@ class EmailTemplateService
             subject: $renderedSubject,
             body: $renderedBody,
             cta: $cta,
+            inlineAttachments: $inlineAttachments,
         );
     }
 
@@ -78,6 +82,7 @@ class EmailTemplateService
     public function previewTemplate(string $subject, string $body, EmailTemplateType $type, ?array $cta = null): array
     {
         $context = $this->tokenBuilder->buildPreviewContext($type->value);
+        unset($context['_inline_attachments']);
 
         $renderedBody = $this->liquidRenderer->render($body, $context);
 

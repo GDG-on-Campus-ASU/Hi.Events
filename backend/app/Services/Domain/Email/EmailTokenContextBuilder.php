@@ -99,12 +99,14 @@ class EmailTokenContextBuilder
         $ticketPrice = Currency::format($orderItem?->getPrice() ?? 0, $event->getCurrency());
         $ticketName = $orderItem?->getItemName();
 
+        $qrCid = 'ticket-qr-' . $attendee->getId();
+
         // Add attendee and ticket objects
         $baseContext['attendee'] = [
             'name' => $attendee->getFirstName() . ' ' . $attendee->getLastName(),
             'email' => $attendee->getEmail() ?? '',
-            'ticket_qr' => $this->qrCodeService->generateImgTag(
-                $attendee->getPublicId(),
+            'ticket_qr' => $this->qrCodeService->generateCidImgTag(
+                $qrCid,
                 200,
                 __('Ticket QR Code')
             ),
@@ -118,6 +120,10 @@ class EmailTokenContextBuilder
                 $event->getId(),
                 $attendee->getShortId()
             ),
+        ];
+
+        $baseContext['_inline_attachments'] = [
+            $qrCid => $this->qrCodeService->generateRawPng($attendee->getPublicId()),
         ];
 
         return $baseContext;
@@ -170,11 +176,13 @@ class EmailTokenContextBuilder
         ];
 
         if ($templateType === 'attendee_ticket') {
+            $qrCid = 'ticket-qr-preview';
+
             $baseContext['attendee'] = [
                 'name' => 'John Smith',
                 'email' => 'john@example.com',
-                'ticket_qr' => $this->qrCodeService->generateImgTag(
-                    'PREVIEW-QR-CODE',
+                'ticket_qr' => $this->qrCodeService->generateCidImgTag(
+                    $qrCid,
                     200,
                     __('Ticket QR Code')
                 ),
@@ -183,6 +191,9 @@ class EmailTokenContextBuilder
                 'name' => 'VIP Pass',
                 'price' => '$75.00',
                 'url' => 'https://example.com/ticket/XYZ789',
+            ];
+            $baseContext['_inline_attachments'] = [
+                $qrCid => $this->qrCodeService->generateRawPng('PREVIEW-QR-CODE'),
             ];
         }
 
