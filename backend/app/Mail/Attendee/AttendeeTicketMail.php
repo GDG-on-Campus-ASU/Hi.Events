@@ -38,7 +38,10 @@ class AttendeeTicketMail extends BaseMail
     {
         parent::__construct();
         $this->renderedTemplate = $renderedTemplate;
+    }
 
+    public function build(): static
+    {
         if ($this->renderedTemplate && !empty($this->renderedTemplate->inlineAttachments)) {
             $inlineAttachments = $this->renderedTemplate->inlineAttachments;
             $this->withSymfonyMessage(function (Email $message) use ($inlineAttachments) {
@@ -47,6 +50,8 @@ class AttendeeTicketMail extends BaseMail
                 }
             });
         }
+
+        return $this;
     }
 
     public function envelope(): Envelope
