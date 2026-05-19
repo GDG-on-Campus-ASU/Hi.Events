@@ -35,9 +35,8 @@ class SendAttendeeTicketService
             $organizer
         );
 
-        $this->mailer
-            ->to($attendee->getEmail())
-            ->locale($attendee->getLocale())
-            ->send($mail);
+        $mail->to($attendee->getEmail());
+        $mail->locale($attendee->getLocale());
+        $mail->send($this->mailer);
     }
 }
