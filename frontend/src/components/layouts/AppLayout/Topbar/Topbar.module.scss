@@ -174,9 +174,12 @@
 
     img {
       max-width: 120px;
+      max-height: 36px;
+      object-fit: contain;
 
       @include mixins.respond-below(sm) {
         max-width: 100px;
+        max-height: 30px;
       }
     }
 

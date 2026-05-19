@@ -6,8 +6,11 @@
 
   .logo {
     display: flex;
+    align-items: center;
     img {
       max-width: 120px;
+      max-height: 36px;
+      object-fit: contain;
     }
   }
 }

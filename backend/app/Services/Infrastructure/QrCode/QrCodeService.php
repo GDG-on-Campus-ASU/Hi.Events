@@ -7,6 +7,17 @@ use chillerlan\QRCode\QROptions;
 
 class QrCodeService
 {
+    public function generateRawPng(string $data, int $scale = 10): string
+    {
+        $options = new QROptions([
+            'outputType' => QRCode::OUTPUT_IMAGE_PNG,
+            'scale' => $scale,
+            'imageBase64' => false,
+        ]);
+
+        return (new QRCode($options))->render($data);
+    }
+
     public function generateBase64Image(string $data, int $scale = 10): string
     {
         $options = new QROptions([
@@ -16,6 +27,17 @@ class QrCodeService
         ]);
 
         return (new QRCode($options))->render($data);
+    }
+
+    public function generateCidImgTag(string $cid, int $size = 200, string $alt = 'QR Code'): string
+    {
+        return sprintf(
+            '<img src="cid:%s" alt="%s" width="%d" height="%d" style="display:block;" />',
+            $cid,
+            htmlspecialchars($alt, ENT_QUOTES, 'UTF-8'),
+            $size,
+            $size
+        );
     }
 
     public function generateImgTag(string $data, int $size = 200, string $alt = 'QR Code'): string

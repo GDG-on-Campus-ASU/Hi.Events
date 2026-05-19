@@ -3,6 +3,7 @@
 namespace HiEvents\Http\Actions\Attendees;
 
 use HiEvents\DomainObjects\EventDomainObject;
+use HiEvents\Exceptions\ResourceConflictException;
 use HiEvents\Http\Actions\BaseAction;
 use HiEvents\Services\Application\Handlers\Attendee\DTO\ResendAttendeeTicketDTO;
 use HiEvents\Services\Application\Handlers\Attendee\ResendAttendeeTicketHandler;
@@ -29,6 +30,8 @@ class ResendAttendeeTicketAction extends BaseAction
             ));
 
         } catch (ResourceNotFoundException $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_NOT_FOUND);
+        } catch (ResourceConflictException $e) {
             return $this->errorResponse($e->getMessage(), Response::HTTP_CONFLICT);
         }
 

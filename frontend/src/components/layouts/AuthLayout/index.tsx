@@ -17,7 +17,6 @@ import {
 } from '@tabler/icons-react';
 import {useCallback, useMemo, useRef} from "react";
 import {getConfig} from "../../../utilites/config.ts";
-import {isHiEvents} from "../../../utilites/helpers.ts";
 import {showInfo} from "../../../utilites/notifications.tsx";
 
 const allFeatures = [
@@ -133,8 +132,8 @@ const AuthLayout = () => {
                     <main className={classes.container}>
                         <div className={classes.logo} onClick={handleLogoClick} style={{cursor: 'pointer'}}>
                             <img
-                                src={getConfig("VITE_APP_LOGO_DARK", "/logos/hi-events-stacked-light.svg")}
-                                alt={t`${getConfig("VITE_APP_NAME", "Hi.Events")} logo`}
+                                src={getConfig("VITE_APP_LOGO_DARK", "https://cdn.kmteam.tech/Images/KMTeam-n.png")}
+                                alt={t`${getConfig("VITE_APP_NAME", "KMTeam")} logo`}
                             />
                         </div>
                         <div className={classes.wrapper}>
@@ -152,7 +151,7 @@ const AuthLayout = () => {
                              *
                              * If you wish to remove this notice, a commercial license is available at: https://hi.events/licensing
                              */}
-                            {!isHiEvents() && <PoweredByFooter />}
+                            <PoweredByFooter />
                             <div className={classes.languageSwitcher}>
                                 <LanguageSwitcher />
                             </div>

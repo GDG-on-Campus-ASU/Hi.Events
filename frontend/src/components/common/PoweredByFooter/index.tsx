@@ -1,9 +1,8 @@
 import {t} from "@lingui/macro";
 import classes from "./FloatingPoweredBy.module.scss";
 import classNames from "classnames";
-import React, {useMemo} from "react";
-import {iHavePurchasedALicence, isHiEvents} from "../../../utilites/helpers.ts";
-import {getConfig} from "../../../utilites/config.ts";
+import React from "react";
+import {iHavePurchasedALicence} from "../../../utilites/helpers.ts";
 
 /**
  * (c) Hi.Events Ltd 2025
@@ -25,46 +24,17 @@ export const PoweredByFooter = (
         return <></>;
     }
 
-    const link = useMemo(() => {
-        let host = getConfig("VITE_FRONTEND_URL") ?? "unknown";
-        let medium = "app";
-
-        if (typeof window !== "undefined" && window.location) {
-            host = window.location.hostname;
-            medium = window.location.pathname.includes("/widget") ? "widget" : "app";
-        }
-
-        const url = new URL("https://hi.events");
-        url.searchParams.set("utm_source", "app-powered-by-footer");
-        url.searchParams.set("utm_medium", isHiEvents() ? medium : 'self-hosted-' + medium);
-        url.searchParams.set("utm_campaign", "powered-by");
-        url.searchParams.set("utm_content", isHiEvents() ? "hi.events" : host);
-
-        return url.toString();
-    }, []);
-
-    const footerContent = isHiEvents() ? (
-        <>
-            {t`Planning an event?`}{" "}
-            <a
-                href={`${link}`}
-                target="_blank"
-                className={classes.ctaLink}
-                title={"Effortlessly manage events and sell tickets online with Hi.Events"}
-            >
-                {t`Try Hi.Events Free`}
-            </a>
-        </>
-    ) : (
+    const footerContent = (
         <>
             {t`Powered by`}{" "}
             <a
-                href={link}
+                href={"https://kmteam.tech"}
                 target="_blank"
-                title={"Effortlessly manage events and sell tickets online with Hi.Events"}
+                title={"Powered by KMTeam LLC"}
+                style={{display: "inline-flex", alignItems: "center", gap: "4px"}}
             >
-                Hi.Events
-            </a>{" "}
+                KMTeam LLC
+            </a>
             🚀
         </>
     );

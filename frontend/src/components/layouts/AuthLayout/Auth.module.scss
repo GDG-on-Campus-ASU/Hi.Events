@@ -62,15 +62,19 @@
   }
 
   img {
-    height: 110px;
+    height: 80px;
+    max-width: 200px;
     width: auto;
+    object-fit: contain;
 
     @include mixins.respond-below(md) {
-      height: 100px;
+      height: 70px;
+      max-width: 180px;
     }
 
     @include mixins.respond-below(sm) {
-      height: 90px;
+      height: 60px;
+      max-width: 160px;
     }
   }
 }

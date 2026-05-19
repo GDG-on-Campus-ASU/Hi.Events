@@ -10,8 +10,10 @@ RUN apk add --update --no-cache \
     imagemagick-webp \
     libwebp \
     libwebp-dev \
+    libpng-dev \
     libtool \
     && pecl install imagick \
-    && docker-php-ext-enable imagick
+    && docker-php-ext-enable imagick \
+    && docker-php-ext-install gd
 
 COPY . /var/task

@@ -91,8 +91,7 @@ export const App: FC<
                                     <Helmet>
                                         <title>{getConfig("VITE_APP_NAME", "Hi.Events")}</title>
                                         <link rel="icon"
-                                              type="image/svg+xml"
-                                              href={getConfig("VITE_APP_FAVICON", "/favicon.svg")}
+                                              href={getConfig("VITE_APP_FAVICON", "https://cdn.kmteam.tech/favicon/KMTeam.ico")}
                                         />
                                     </Helmet>
                                     {props.children}

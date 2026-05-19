@@ -30,6 +30,13 @@
     a {
       display: flex;
       width: 100%;
+      justify-content: center;
+    }
+
+    img {
+      max-width: 140px;
+      max-height: 40px;
+      object-fit: contain;
     }
   }
 

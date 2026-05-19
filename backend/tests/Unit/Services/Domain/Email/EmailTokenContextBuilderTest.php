@@ -24,8 +24,10 @@ class EmailTokenContextBuilderTest extends TestCase
     {
         parent::setUp();
         $this->qrCodeService = Mockery::mock(QrCodeService::class);
-        $this->qrCodeService->shouldReceive('generateImgTag')
-            ->andReturn('<img src="data:image/png;base64,mockqr" alt="Ticket QR Code" width="200" height="200" />');
+        $this->qrCodeService->shouldReceive('generateCidImgTag')
+            ->andReturn('<img src="cid:ticket-qr-1" alt="Ticket QR Code" width="200" height="200" />');
+        $this->qrCodeService->shouldReceive('generateRawPng')
+            ->andReturn('fake-png-data');
         $this->contextBuilder = new EmailTokenContextBuilder($this->qrCodeService);
     }
 
@@ -96,6 +98,11 @@ class EmailTokenContextBuilderTest extends TestCase
         $this->assertEquals('jane@example.com', $context['attendee']['email']);
         $this->assertArrayHasKey('ticket_qr', $context['attendee']);
         $this->assertStringContainsString('<img', $context['attendee']['ticket_qr']);
+        $this->assertStringContainsString('cid:', $context['attendee']['ticket_qr']);
+
+        // Test inline attachments
+        $this->assertArrayHasKey('_inline_attachments', $context);
+        $this->assertNotEmpty($context['_inline_attachments']);
 
         // Test ticket context
         $this->assertEquals('General Admission', $context['ticket']['name']);
@@ -228,6 +235,7 @@ class EmailTokenContextBuilderTest extends TestCase
             'getProductPriceId' => 123,
             'getShortId' => 'ATT123',
             'getPublicId' => 'PUB-ATT-123456',
+            'getId' => 1,
         ]);
     }
 }

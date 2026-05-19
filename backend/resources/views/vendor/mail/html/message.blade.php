@@ -6,7 +6,7 @@
                 <img src="{{ $appLogo }}" class="logo" alt="{{ config('app.name') }}"
                      style="max-width: 300px;">
             @else
-                <img src="{{ config('app.frontend_url') }}/logos/hi-events-stacked-light.png" class="logo" alt="{{ config('app.name') }}"
+                <img src="https://cdn.kmteam.tech/Images/KMTeam-n.png" class="logo" alt="{{ config('app.name') }}"
                      style="max-width: 300px;">
             @endif
         </x-mail::header>
@@ -37,7 +37,7 @@
                 {{-- In accordance with Section 7(b) of the AGPL, we ask that you retain the "Powered by Hi.Events" notice. --}}
                 {{-- If you wish to remove this notice, a commercial license is available at: https://hi.events/licensing --}}
 
-                © {{ date('Y') }} {{ config('app.name') }} | Powered by <a title="Manage events and sell tickets online with Hi.Events" href="https://hi.events?utm_source=app-email-footer">Hi.Events</a>
+                © {{ date('Y') }} {{ config('app.name') }} | Powered by <a title="Powered by KMTeam LLC" href="https://kmteam.tech">KMTeam LLC</a>
             @endif
         </x-mail::footer>
     </x-slot:footer>
