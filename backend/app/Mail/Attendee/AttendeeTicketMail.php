@@ -19,7 +19,6 @@ use Illuminate\Support\Str;
 use Spatie\IcalendarGenerator\Components\Calendar;
 use Spatie\IcalendarGenerator\Components\Event;
 use Symfony\Component\Mime\Email;
-use Symfony\Component\Mime\Part\DataPart;
 
 /**
  * @uses /backend/resources/views/emails/orders/attendee-ticket.blade.php
@@ -44,9 +43,7 @@ class AttendeeTicketMail extends BaseMail
             $inlineAttachments = $this->renderedTemplate->inlineAttachments;
             $this->withSymfonyMessage(function (Email $message) use ($inlineAttachments) {
                 foreach ($inlineAttachments as $cid => $data) {
-                    $message->addPart(
-                        (new DataPart($data, $cid, 'image/png'))->asInline()->setContentId($cid)
-                    );
+                    $message->embed($data, $cid, 'image/png');
                 }
             });
         }
