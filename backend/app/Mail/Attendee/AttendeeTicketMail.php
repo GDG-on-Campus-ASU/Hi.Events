@@ -15,6 +15,7 @@ use HiEvents\Services\Domain\Email\DTO\RenderedEmailTemplateDTO;
 use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
+use Illuminate\Mail\SentMessage;
 use Illuminate\Support\Str;
 use Spatie\IcalendarGenerator\Components\Calendar;
 use Spatie\IcalendarGenerator\Components\Event;
@@ -40,7 +41,7 @@ class AttendeeTicketMail extends BaseMail
         $this->renderedTemplate = $renderedTemplate;
     }
 
-    public function build(): static
+    public function send($mailer): ?SentMessage
     {
         if ($this->renderedTemplate && !empty($this->renderedTemplate->inlineAttachments)) {
             $inlineAttachments = $this->renderedTemplate->inlineAttachments;
@@ -51,7 +52,7 @@ class AttendeeTicketMail extends BaseMail
             });
         }
 
-        return $this;
+        return parent::send($mailer);
     }
 
     public function envelope(): Envelope
